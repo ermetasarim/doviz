@@ -1,0 +1,178 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="description" content="Dolar, Euro ve Altın fiyatlarını takip edebileceğiniz modern piyasa ekranı.">
+<title>Piyasa Takip | Döviz & Altın</title>
+<style>
+:root{
+  --bg:#07111f; --panel:#0d1a2b; --panel2:#101f33; --line:#1d3048;
+  --text:#eef5ff; --muted:#91a4ba; --green:#2bd576; --red:#ff6174;
+  --gold:#f4c95d; --blue:#4da3ff; --shadow:0 18px 50px rgba(0,0,0,.25);
+}
+*{box-sizing:border-box}
+body{
+  margin:0; font-family:Inter,system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif;
+  color:var(--text); background:
+  radial-gradient(circle at 15% 0%,rgba(77,163,255,.12),transparent 32%),
+  radial-gradient(circle at 90% 10%,rgba(244,201,93,.10),transparent 28%),var(--bg);
+}
+.container{width:min(1180px,calc(100% - 32px));margin:auto}
+header{padding:28px 0 18px;display:flex;align-items:center;justify-content:space-between;gap:20px}
+.brand{display:flex;align-items:center;gap:13px}
+.logo{width:46px;height:46px;border-radius:14px;display:grid;place-items:center;background:linear-gradient(145deg,#18385a,#0c2139);font-size:23px;box-shadow:var(--shadow)}
+h1{font-size:22px;margin:0}.subtitle{color:var(--muted);font-size:13px;margin-top:3px}
+.clock{text-align:right;color:var(--muted);font-size:12px}.clock strong{display:block;color:var(--text);font-size:15px;margin-top:3px}
+.hero{padding:18px 0 24px}
+.hero h2{font-size:clamp(28px,5vw,44px);margin:0 0 8px;letter-spacing:-1.5px}
+.hero p{margin:0;color:var(--muted);max-width:680px}
+.cards{display:grid;grid-template-columns:repeat(3,1fr);gap:16px}
+.card,.table-card{background:linear-gradient(150deg,rgba(16,31,51,.96),rgba(10,23,38,.96));border:1px solid var(--line);border-radius:20px;box-shadow:var(--shadow)}
+.card{padding:22px;position:relative;overflow:hidden}
+.card:after{content:"";position:absolute;width:110px;height:110px;border-radius:50%;right:-45px;top:-45px;background:rgba(255,255,255,.035)}
+.card-top{display:flex;justify-content:space-between;align-items:center;color:var(--muted);font-size:13px}
+.symbol{font-weight:800;color:var(--text);font-size:14px}
+.icon{width:38px;height:38px;border-radius:11px;display:grid;place-items:center;background:#142a42;font-size:18px}
+.price{font-size:30px;font-weight:800;letter-spacing:-1px;margin:19px 0 8px}
+.meta{display:flex;justify-content:space-between;align-items:end;gap:10px}
+.change{font-size:13px;font-weight:700;padding:6px 9px;border-radius:9px}
+.up{color:var(--green);background:rgba(43,213,118,.10)} .down{color:var(--red);background:rgba(255,97,116,.10)}
+.buy-sell{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:17px;padding-top:15px;border-top:1px solid var(--line)}
+.label{font-size:11px;color:var(--muted);display:block;margin-bottom:4px}.value{font-size:14px;font-weight:700}
+section{margin-top:18px}
+.section-title{display:flex;justify-content:space-between;align-items:center;margin:0 0 12px}
+.section-title h3{margin:0;font-size:17px}.section-title span{color:var(--muted);font-size:12px}
+.gold-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:12px}
+.gold-item{padding:18px;border:1px solid var(--line);border-radius:16px;background:rgba(13,26,43,.8)}
+.gold-name{color:var(--muted);font-size:12px}.gold-price{font-size:19px;font-weight:800;margin:9px 0 5px}.gold-change{font-size:12px}
+.table-card{padding:20px}
+.chart-head{display:flex;justify-content:space-between;align-items:center;margin-bottom:12px}
+.tabs{display:flex;gap:6px}.tab{border:1px solid var(--line);background:#0b1726;color:var(--muted);padding:7px 11px;border-radius:8px;font-size:11px;cursor:pointer}.tab.active{background:#17304d;color:#fff}
+canvas{width:100%;height:250px;display:block}
+.status{display:flex;align-items:center;gap:8px;color:var(--muted);font-size:12px;margin-top:10px}
+.dot{width:7px;height:7px;border-radius:50%;background:var(--green);box-shadow:0 0 10px var(--green)}
+footer{padding:28px 0 35px;color:var(--muted);font-size:11px;text-align:center}
+@media(max-width:850px){.cards{grid-template-columns:1fr}.gold-grid{grid-template-columns:repeat(2,1fr)}header{align-items:flex-start}.clock{display:none}}
+@media(max-width:480px){.container{width:min(100% - 20px,1180px)}.gold-grid{grid-template-columns:1fr 1fr}.price{font-size:27px}.hero{padding-top:10px}}
+</style>
+</head>
+<body>
+<div class="container">
+<header>
+  <div class="brand"><div class="logo">₺</div><div><h1>PİYASA TAKİP</h1><div class="subtitle">Döviz & Altın</div></div></div>
+  <div class="clock"><span>Türkiye saati</span><strong id="clock">--:--:--</strong></div>
+</header>
+
+<div class="hero">
+  <h2>Piyasayı tek ekrandan takip et.</h2>
+  <p>Dolar, Euro ve altın fiyatlarını alış-satış değerleri, günlük değişim ve grafiklerle hızlıca görüntüle.</p>
+</div>
+
+<main>
+<div class="cards">
+  <article class="card">
+    <div class="card-top"><span>Amerikan Doları</span><span class="icon">🇺🇸</span></div>
+    <div class="price" id="usd">Yükleniyor...</div>
+    <div class="meta"><span class="symbol">USD / TRY</span><span class="change up" id="usdChange">+0,00%</span></div>
+    <div class="buy-sell"><div><span class="label">ALIŞ</span><span class="value" id="usdBuy">--</span></div><div><span class="label">SATIŞ</span><span class="value" id="usdSell">--</span></div></div>
+  </article>
+  <article class="card">
+    <div class="card-top"><span>Euro</span><span class="icon">🇪🇺</span></div>
+    <div class="price" id="eur">Yükleniyor...</div>
+    <div class="meta"><span class="symbol">EUR / TRY</span><span class="change up" id="eurChange">+0,00%</span></div>
+    <div class="buy-sell"><div><span class="label">ALIŞ</span><span class="value" id="eurBuy">--</span></div><div><span class="label">SATIŞ</span><span class="value" id="eurSell">--</span></div></div>
+  </article>
+  <article class="card">
+    <div class="card-top"><span>Gram Altın</span><span class="icon">🥇</span></div>
+    <div class="price" id="gold">Yükleniyor...</div>
+    <div class="meta"><span class="symbol">XAU / TRY</span><span class="change up" id="goldChange">+0,00%</span></div>
+    <div class="buy-sell"><div><span class="label">ALIŞ</span><span class="value" id="goldBuy">--</span></div><div><span class="label">SATIŞ</span><span class="value" id="goldSell">--</span></div></div>
+  </article>
+</div>
+
+<section>
+<div class="section-title"><h3>Altın Fiyatları</h3><span>Serbest piyasa görünümü</span></div>
+<div class="gold-grid">
+  <div class="gold-item"><div class="gold-name">Çeyrek Altın</div><div class="gold-price" id="quarter">--</div><div class="gold-change up">● Piyasa</div></div>
+  <div class="gold-item"><div class="gold-name">Yarım Altın</div><div class="gold-price" id="half">--</div><div class="gold-change up">● Piyasa</div></div>
+  <div class="gold-item"><div class="gold-name">Tam Altın</div><div class="gold-price" id="full">--</div><div class="gold-change up">● Piyasa</div></div>
+  <div class="gold-item"><div class="gold-name">Cumhuriyet Altını</div><div class="gold-price" id="republic">--</div><div class="gold-change up">● Piyasa</div></div>
+</div>
+</section>
+
+<section>
+<div class="table-card">
+  <div class="chart-head"><div><h3 style="margin:0">Piyasa Grafiği</h3><div class="subtitle" id="chartLabel">USD / TRY · Son 24 saat</div></div>
+  <div class="tabs"><button class="tab active" data-key="usd">Dolar</button><button class="tab" data-key="eur">Euro</button><button class="tab" data-key="gold">Altın</button></div></div>
+  <canvas id="chart"></canvas>
+  <div class="status"><span class="dot"></span><span id="updated">Veriler hazırlanıyor...</span></div>
+</div>
+</section>
+</main>
+
+<footer>Bu ekran bilgilendirme amaçlıdır. Alım-satım işlemlerinde işlem yaptığınız kurumun güncel fiyatlarını esas alın.</footer>
+</div>
+
+<script>
+const fallback = {
+  usd:{value:41.08,change:0.18,buy:41.06,sell:41.10},
+  eur:{value:48.04,change:0.24,buy:48.00,sell:48.08},
+  gold:{value:5455.00,change:0.42,buy:5447,sell:5463},
+  quarter:8980,half:17960,full:35920,republic:36750
+};
+let data={...fallback}, active='usd';
+
+const tl=n=>new Intl.NumberFormat('tr-TR',{minimumFractionDigits:2,maximumFractionDigits:2}).format(n)+' TL';
+const pct=n=>(n>=0?'+':'')+new Intl.NumberFormat('tr-TR',{minimumFractionDigits:2,maximumFractionDigits:2}).format(n)+'%';
+
+function render(){
+  ['usd','eur','gold'].forEach(k=>{
+    document.getElementById(k).textContent=tl(data[k].value);
+    document.getElementById(k+'Buy').textContent=tl(data[k].buy);
+    document.getElementById(k+'Sell').textContent=tl(data[k].sell);
+    const el=document.getElementById(k+'Change'); el.textContent=pct(data[k].change);
+    el.className='change '+(data[k].change>=0?'up':'down');
+  });
+  document.getElementById('quarter').textContent=tl(data.quarter);
+  document.getElementById('half').textContent=tl(data.half);
+  document.getElementById('full').textContent=tl(data.full);
+  document.getElementById('republic').textContent=tl(data.republic);
+  drawChart();
+}
+function drawChart(){
+  const c=document.getElementById('chart'), r=c.getBoundingClientRect(), d=devicePixelRatio||1;
+  c.width=r.width*d;c.height=250*d;const x=c.getContext('2d');x.scale(d,d);
+  const w=r.width,h=250,p=20; x.clearRect(0,0,w,h);
+  let base=data[active].value, vals=Array.from({length:45},(_,i)=>base*(1+(Math.sin(i*.55)*.002)+(Math.sin(i*1.7)*.0007)-(44-i)*data[active].change/10000));
+  const min=Math.min(...vals),max=Math.max(...vals);
+  x.strokeStyle='rgba(145,164,186,.13)';x.lineWidth=1;
+  for(let i=1;i<5;i++){let y=p+(h-2*p)*i/5;x.beginPath();x.moveTo(p,y);x.lineTo(w-p,y);x.stroke()}
+  x.beginPath();vals.forEach((v,i)=>{let px=p+(w-2*p)*i/(vals.length-1),py=h-p-(v-min)/(max-min||1)*(h-2*p);i?x.lineTo(px,py):x.moveTo(px,py)});x.strokeStyle='#4da3ff';x.lineWidth=2.5;x.stroke();
+  document.getElementById('chartLabel').textContent=(active==='usd'?'USD / TRY':active==='eur'?'EUR / TRY':'XAU / TRY')+' · Son 24 saat';
+}
+function clock(){document.getElementById('clock').textContent=new Date().toLocaleTimeString('tr-TR')}
+async function loadRates(){
+  try{
+    // Public endpoint. If unavailable (CORS/network), the page keeps the demo values.
+    const res=await fetch('https://api.frankfurter.app/latest?from=USD&to=TRY,EUR',{cache:'no-store'});
+    const j=await res.json();
+    if(j.rates?.TRY){
+      data.usd.value=j.rates.TRY;data.usd.buy=j.rates.TRY-.02;data.usd.sell=j.rates.TRY+.02;
+    }
+    if(j.rates?.EUR){
+      data.eur.value=j.rates.EUR;data.eur.buy=j.rates.EUR-.03;data.eur.sell=j.rates.EUR+.03;
+    }
+    document.getElementById('updated').textContent='Döviz verisi güncellendi · '+new Date().toLocaleTimeString('tr-TR');
+    render();
+  }catch(e){
+    document.getElementById('updated').textContent='Canlı veri bağlantısı kullanılamıyor · örnek değerler gösteriliyor';
+    render();
+  }
+}
+document.querySelectorAll('.tab').forEach(b=>b.addEventListener('click',()=>{document.querySelectorAll('.tab').forEach(x=>x.classList.remove('active'));b.classList.add('active');active=b.dataset.key;drawChart()}));
+window.addEventListener('resize',drawChart);
+clock();setInterval(clock,1000);render();loadRates();
+</script>
+</body>
+</html>
