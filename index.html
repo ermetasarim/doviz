@@ -21,7 +21,6 @@
 
 body{
   margin:0; 
-  /* INTER FONT AİLESİ UYGULANDI */
   font-family: 'Inter', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
   color:var(--text); background:
   radial-gradient(circle at 15% 0%,rgba(77,163,255,.12),transparent 32%),
@@ -77,8 +76,17 @@ section{margin-top:18px}
 .gold-item{padding:18px;border:1px solid var(--line);border-radius:16px;background:rgba(13,26,43,.8)}
 .gold-name{color:var(--muted);font-size:12px}.gold-price{font-size:19px;font-weight:800;margin:9px 0 5px}
 
-/* Canlı Veri Tablosu */
-.table-card{padding:20px;overflow-x:auto}
+/* Canlı Veri Tablosu VE KAYDIRMA ÇUBUĞUNU GİZLEME */
+.table-card{
+  padding:20px;
+  overflow-x:auto;
+  scrollbar-width: none; /* Firefox için kaydırma çubuğunu gizle */
+  -ms-overflow-style: none; /* IE ve Edge için */
+}
+.table-card::-webkit-scrollbar {
+  display: none; /* Chrome, Safari, Opera için kaydırma çubuğunu gizle */
+}
+
 .market-table{width:100%;border-collapse:collapse;text-align:left;font-size:14px;margin-top:10px}
 .market-table th{padding:12px 16px;color:var(--muted);font-weight:600;border-bottom:1px solid var(--line);font-size:12px}
 .market-table td{padding:14px 16px;border-bottom:1px solid rgba(29,48,72,.5)}
@@ -88,6 +96,9 @@ section{margin-top:18px}
 .asset-cell{display:flex;align-items:center;gap:10px;font-weight:700}
 .asset-icon{width:28px;height:28px;border-radius:8px;background:#142a42;display:grid;place-items:center;font-size:14px}
 .row-arrow{margin-left:auto;color:var(--blue);font-size:12px;font-weight:700}
+
+/* Masaüstü Grafik Butonu */
+.mobile-chart-btn { display: none; }
 
 /* Grafik Sayfası Özel Stilleri */
 .back-btn {
@@ -104,8 +115,12 @@ section{margin-top:18px}
 .detail-price-box .price-val { font-size: 32px; font-weight: 800; }
 
 .chart-head{display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;flex-wrap:wrap;gap:10px}
-.tabs{display:flex;gap:6px;flex-wrap:wrap}
-.tab{border:1px solid var(--line);background:#0b1726;color:var(--muted);padding:8px 14px;border-radius:8px;font-size:12px;cursor:pointer;font-family:inherit;font-weight:500;transition:0.2s}
+.tabs{
+  display:flex;gap:6px;flex-wrap:nowrap; overflow-x:auto; padding-bottom: 4px;
+  scrollbar-width: none; -ms-overflow-style: none;
+}
+.tabs::-webkit-scrollbar { display: none; }
+.tab{border:1px solid var(--line);background:#0b1726;color:var(--muted);padding:8px 14px;border-radius:8px;font-size:12px;cursor:pointer;font-family:inherit;font-weight:500;transition:0.2s; flex-shrink:0}
 .tab.active{background:#17304d;color:#fff;border-color:var(--blue)}
 
 canvas{width:100%;height:320px;display:block;margin-top:15px}
@@ -130,7 +145,20 @@ footer{padding:28px 0 35px;color:var(--muted);font-size:11px;text-align:center}
 .popup-close{background:transparent;border:none;color:var(--muted);cursor:pointer;font-size:16px;margin-left:auto}
 
 @media(max-width:850px){.cards{grid-template-columns:1fr}.gold-grid{grid-template-columns:repeat(2,1fr)}header{align-items:flex-start}.clock{display:none}}
-@media(max-width:480px){.container{width:min(100% - 20px,1180px)}.gold-grid{grid-template-columns:1fr 1fr}.price{font-size:27px}.hero{padding-top:10px}}
+
+/* TELEFON GÖRÜNÜMÜ ÖZELLEŞTİRMELERİ */
+@media(max-width:480px){
+  .container{width:min(100% - 20px,1180px)}.gold-grid{grid-template-columns:1fr 1fr}.price{font-size:27px}.hero{padding-top:10px}
+  
+  /* Telefonda "Grafik ➔" metni yerine şık mavi bir grafik butonu göster */
+  .desktop-action { display: none; }
+  .mobile-chart-btn {
+    display: inline-flex; align-items: center; justify-content: center; gap:4px;
+    background: rgba(77,163,255,0.12); color: var(--blue);
+    border: 1px solid rgba(77,163,255,0.25); border-radius: 8px;
+    padding: 6px 10px; font-size: 11px; font-weight: 700;
+  }
+}
 </style>
 </head>
 <body>
@@ -184,7 +212,7 @@ footer{padding:28px 0 35px;color:var(--muted);font-size:11px;text-align:center}
   <!-- CANLI PİYASA TABLOSU -->
   <section>
   <div class="table-card">
-    <div class="section-title" style="margin-bottom:0"><h3>Tüm Piyasa Tablosu</h3><span>Grafik ve detaylar için varlığa tıklayın</span></div>
+    <div class="section-title" style="margin-bottom:0"><h3>Tüm Piyasa Tablosu</h3><span>Grafik ve detaylar için tıklayın</span></div>
     <table class="market-table">
       <thead>
         <tr>
@@ -199,37 +227,65 @@ footer{padding:28px 0 35px;color:var(--muted);font-size:11px;text-align:center}
         <tr class="clickable-row" data-key="usd">
           <td><div class="asset-cell"><span class="asset-icon">🇺🇸</span> ABD Doları (USD)</div></td>
           <td id="t_usdVal">--</td><td id="t_usdBuy">--</td><td id="t_usdSell">--</td>
-          <td><span class="change neutral" id="t_usdChange">0.00% ➖</span> <span class="row-arrow">Grafik ➔</span></td>
+          <td>
+            <span class="change neutral" id="t_usdChange">0.00% ➖</span>
+            <span class="row-arrow desktop-action">Grafik ➔</span>
+            <span class="mobile-chart-btn">📈 Grafik</span>
+          </td>
         </tr>
         <tr class="clickable-row" data-key="eur">
           <td><div class="asset-cell"><span class="asset-icon">🇪🇺</span> Euro (EUR)</div></td>
           <td id="t_eurVal">--</td><td id="t_eurBuy">--</td><td id="t_eurSell">--</td>
-          <td><span class="change neutral" id="t_eurChange">0.00% ➖</span> <span class="row-arrow">Grafik ➔</span></td>
+          <td>
+            <span class="change neutral" id="t_eurChange">0.00% ➖</span>
+            <span class="row-arrow desktop-action">Grafik ➔</span>
+            <span class="mobile-chart-btn">📈 Grafik</span>
+          </td>
         </tr>
         <tr class="clickable-row" data-key="gold">
           <td><div class="asset-cell"><span class="asset-icon">🥇</span> Gram Altın</div></td>
           <td id="t_goldVal">--</td><td id="t_goldBuy">--</td><td id="t_goldSell">--</td>
-          <td><span class="change neutral" id="t_goldChange">0.00% ➖</span> <span class="row-arrow">Grafik ➔</span></td>
+          <td>
+            <span class="change neutral" id="t_goldChange">0.00% ➖</span>
+            <span class="row-arrow desktop-action">Grafik ➔</span>
+            <span class="mobile-chart-btn">📈 Grafik</span>
+          </td>
         </tr>
         <tr class="clickable-row" data-key="quarter">
           <td><div class="asset-cell"><span class="asset-icon">🪙</span> Çeyrek Altın</div></td>
           <td id="t_quarterVal">--</td><td>—</td><td>—</td>
-          <td><span class="change neutral">Spot ➖</span> <span class="row-arrow">Grafik ➔</span></td>
+          <td>
+            <span class="change neutral">Spot ➖</span>
+            <span class="row-arrow desktop-action">Grafik ➔</span>
+            <span class="mobile-chart-btn">📈 Grafik</span>
+          </td>
         </tr>
         <tr class="clickable-row" data-key="half">
           <td><div class="asset-cell"><span class="asset-icon">🪙</span> Yarım Altın</div></td>
           <td id="t_halfVal">--</td><td>—</td><td>—</td>
-          <td><span class="change neutral">Spot ➖</span> <span class="row-arrow">Grafik ➔</span></td>
+          <td>
+            <span class="change neutral">Spot ➖</span>
+            <span class="row-arrow desktop-action">Grafik ➔</span>
+            <span class="mobile-chart-btn">📈 Grafik</span>
+          </td>
         </tr>
         <tr class="clickable-row" data-key="full">
           <td><div class="asset-cell"><span class="asset-icon">🪙</span> Tam Altın</div></td>
           <td id="t_fullVal">--</td><td>—</td><td>—</td>
-          <td><span class="change neutral">Spot ➖</span> <span class="row-arrow">Grafik ➔</span></td>
+          <td>
+            <span class="change neutral">Spot ➖</span>
+            <span class="row-arrow desktop-action">Grafik ➔</span>
+            <span class="mobile-chart-btn">📈 Grafik</span>
+          </td>
         </tr>
         <tr class="clickable-row" data-key="republic">
           <td><div class="asset-cell"><span class="asset-icon">🪙</span> Cumhuriyet Altını</div></td>
           <td id="t_republicVal">--</td><td>—</td><td>—</td>
-          <td><span class="change neutral">Spot ➖</span> <span class="row-arrow">Grafik ➔</span></td>
+          <td>
+            <span class="change neutral">Spot ➖</span>
+            <span class="row-arrow desktop-action">Grafik ➔</span>
+            <span class="mobile-chart-btn">📈 Grafik</span>
+          </td>
         </tr>
       </tbody>
     </table>
